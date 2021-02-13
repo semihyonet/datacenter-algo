@@ -21,6 +21,11 @@ public class VirtualMachine {
 	public int getId() {
 		return id;
 	}
+
+	@Override
+	public String toString() {
+		return "VirtualMachine id:"+id+ "[disk=" + disk + ", ram=" + ram +"]";
+	}
 	
 
 }
