@@ -36,7 +36,7 @@ public class Host {
 		return false;
 	}
 	
-	public void removeVM(int id) {
+	public void removeVM(int id) { // THIS IS NOT INDEX , it is the id of the vm
 		VirtualMachine indexVM; // Virtual machine to iterate through
 		for (int i = 0; i < virtualMachines.size(); i++)
 		{
@@ -52,7 +52,7 @@ public class Host {
 		}
 	}
 	
-	public boolean hasEnoughSpace(VirtualMachine vm){
+	public boolean hasEnoughSpace(VirtualMachine vm){ // Checks if it has enough space for a potential vm
 		if(disk-usedDisk >= vm.getDisk()&& ram-usedRam >= vm.getRam())
 		{
 			return true;
