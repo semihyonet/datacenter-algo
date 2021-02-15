@@ -1,5 +1,7 @@
 package datacenter;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList; // import the ArrayList class
 import java.util.Scanner;  // Import the Scanner class
 
@@ -13,6 +15,7 @@ public class DataCenter {
 
 	public void newHost(int disk,int ram) { // Adds a new Host
 		Host newHost = new Host(hostIndex, disk, ram);
+		System.out.println("Added a new host : "+ newHost.toString());
 		hosts.add(newHost);
 		hostIndex++;
 	}
@@ -220,6 +223,7 @@ public class DataCenter {
 		return total;
 	}
 
+	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		DataCenter myCenter = new DataCenter();
@@ -233,6 +237,36 @@ public class DataCenter {
 			//myCenter.newVM(i*50, 150);	
 			//System.out.println(myCenter.toString());
 //		}
+		
+
+		try {
+
+			File hostFile = new File("./src/datacenter/scenarios/host.txt");
+			Scanner hostReader;
+			hostReader = new Scanner(hostFile);
+			String line;
+			String[] lineArr;
+			while(hostReader.hasNextLine())
+			{
+				line = hostReader.nextLine();
+				lineArr =line.split("\\s");//splits the string based on whitespace  
+				myCenter.newHost(Integer.parseInt(lineArr[0]), Integer.parseInt(lineArr[1])); //Each line must have 2 integers
+			}																			//   Which represents 1)Disk and 2)RAM
+			File vmFile = new File("./src/datacenter/scenarios/vm.txt");
+			Scanner vmReader;
+			vmReader = new Scanner(vmFile);
+			
+			
+			while(vmReader.hasNextLine())
+			{
+				line = vmReader.nextLine();
+				lineArr =line.split("\\s");//splits the string based on whitespace  
+				myCenter.newVM(Integer.parseInt(lineArr[0]), Integer.parseInt(lineArr[1])); //Each line must have 2 integers
+			}																
+		} catch (FileNotFoundException e1) {
+
+			e1.printStackTrace();
+		}
 		
 		boolean loop = true;     
 		@SuppressWarnings("resource")
