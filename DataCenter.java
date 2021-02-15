@@ -11,7 +11,7 @@ public class DataCenter {
 	public DataCenter() {
 	}
 
-	public void newHost(int disk,int ram) {
+	public void newHost(int disk,int ram) { // Adds a new Host
 		Host newHost = new Host(hostIndex, disk, ram);
 		hosts.add(newHost);
 		hostIndex++;
@@ -26,21 +26,23 @@ public class DataCenter {
 		{
 			currentHost = hosts.get(hosts.size() - 1- i);  // Loops from the fullest to the emptiest
 			if(currentHost.hasEnoughSpace(newVm) && currentHost.isFit(newVm)) // Checks if it has space and
-			{																//if it completes the disk or ram space of the host
-				currentHost.addVM(newVm);
-				vmIndex++;
-				result = true;
+			{																//if it completes the disk or ram space of the host					System.out.println("\tAdding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
+				System.out.println("\tFound a HOST that fit! Adding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
+
+				currentHost.addVM(newVm); // VM will be added into the host and the host will sort it's VM's
+				vmIndex++; // Increments the Index 
+				result = true; // This means that it's inserted and don't need to get into the later if clauses
 				break;
 			}
 		}
-		if(!result) // if the vm wasnt already placed
+		if(!result) // Loops to find and empty space to be placed in
 		{
 			for (int i = 0; i < hosts.size(); i++) 	//This loop is for placing the vm into the emptiest host
 			{
 				currentHost = hosts.get(i);
-				if(currentHost.hasEnoughSpace(newVm))
+				if(currentHost.hasEnoughSpace(newVm)) // If it has space it gets inserted
 				{
-					currentHost.addVM(newVm);
+					currentHost.addVM(newVm); // Adds into the host and the host does sort
 					vmIndex++;
 					System.out.println("\tAdding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
 					result = true;
@@ -54,26 +56,26 @@ public class DataCenter {
 		Host otherHost;
 		if(!result) // This if clause is for emptying up space for the vm
 		{
-			for(int i = 0; i < hosts.size(); i++)
+			for(int i = 0; i < hosts.size(); i++) // Loops to find a host to empty up space for
 			{
-				currentHost = hosts.get(i);
-				if(!currentHost.full)
+				currentHost = hosts.get(i); 
+				if(!currentHost.full) // If it's full then we stop. We shouldn't touch full VM's
 				{
-					for(int j = 0; j < currentHost.vmSize(); j++)
+					for(int j = 0; j < currentHost.vmSize(); j++) // Loops to find a VM to swap out
 					{
-						currentVm = currentHost.getVm(j);
-						if(	currentHost.getAvailableDisk() + currentVm.getDisk()- newVm.getDisk() >= 0 
+						currentVm = currentHost.getVm(j); 
+						if(	currentHost.getAvailableDisk() + currentVm.getDisk()- newVm.getDisk() >= 0  // This checks if new vm will fit after we swap out
 						&&currentHost.getAvailableRam()+ currentVm.getRam()- newVm.getRam() >=0)
 						{
-							for (int k = 0; k < hosts.size(); k++)
+							for (int k = 0; k < hosts.size(); k++) // This is for searching new Host's that we can transfer the currentVM into
 							{
-								otherHost = hosts.get(k);
-								if(k != i && !otherHost.full &&  otherHost.hasEnoughSpace(currentVm))
+								otherHost = hosts.get(k); 
+								if(k != i && !otherHost.full &&  otherHost.hasEnoughSpace(currentVm)) 
 								{
-									currentHost.removeVM(currentVm.getId());
-									otherHost.addVM(currentVm);
+									currentHost.removeVM(currentVm.getId()); //Transfers the VM to open up space
+									otherHost.addVM(currentVm); 
 									
-									currentHost.addVM(newVm);
+									currentHost.addVM(newVm); // Adds the vm into the currentHost
 									result = true;
 									break;
 								}
@@ -94,15 +96,16 @@ public class DataCenter {
 		
 		
 		
-		if(result)
+		if(result) // These checks happen each time a vm is inserted. 
 		{
-			this.bubbleSortHost();
-			this.searchForFit();
+			this.bubbleSortHost(); // Sorts the Host array
+			this.searchForFit(); // Swaps vm's to get into the FIT position
 		}
 		
-		
-		
-		
+		else if(!result)
+		{
+			System.out.println("\tVM was unable to find a host.");
+		}
 		
 		return result;
 	}
@@ -110,9 +113,9 @@ public class DataCenter {
 	public void bubbleSortHost() {
 		Host a;
 		Host b; 
-		for (int i = 0; i < hosts.size()-1; i++)
+		for (int i = 0; i < hosts.size()-1; i++) // Limit the index
 		{
-			for(int j = 0; j <hosts.size()-i-1; j++)
+			for(int j = 0; j <hosts.size()-i-1; j++) // This
 			{
 				a = hosts.get(j);
 				b = hosts.get(j+1);
@@ -153,14 +156,15 @@ public class DataCenter {
 				for(int j = 0; j < hostIndex.vmSize() ; j++) // This is for iterating over the vm's the host has
 				{// We try to swap a vm which has x size with an x + available disk sized vm which will make our host full
 					vmIndex = hostIndex.getVm(j);
-					for (int k = 0; k < hosts.size(); k++)
+					for (int k = 0; k < hosts.size(); k++) 
 					{
 						if(k != i && !hosts.get(k).full)
-						{
+						{ // searchDiskVM Method searchs for a applicable vm with respect to the current RAM
+					      // Since it might find a VM with a suitable disk space
 							result = hosts.get(k).searchDiskVM(availableDisk + vmIndex.getDisk(), availableRam, vmIndex.getRam());
 							if (result >= 0 ) 
 							{
-								if (this.swapVMbetweenHosts(i, j, k, result))
+								if (this.swapVMbetweenHosts(i, j, k, result)) // Params are (Host1 index,vm1 index, host2 index, vm2 index)
 								{
 									swapped = true;
 									break;
@@ -188,11 +192,13 @@ public class DataCenter {
 		VirtualMachine vmHost2 = host2.getVm(vmHost2i);
 		
 		
-		host1.removeVM(vmHost1.getId());
+		host1.removeVM(vmHost1.getId()); // Removes the vms
 		host2.removeVM(vmHost2.getId());
 		if (host1.addVM(vmHost2) == false || host2.addVM(vmHost1) == false)
 		{
-			host1.addVM(vmHost1);
+			//host1.removeVM(vmHost2.getId());
+			//host2.removeVM(vmHost1.getId());
+			host1.addVM(vmHost1); // swaps the hosts
 			host2.addVM(vmHost2);
 			System.out.println("Couldnt swap"+vmHost1.toString()+" with-> "+vmHost2.toString());
 			return false;
