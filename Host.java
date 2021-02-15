@@ -20,16 +20,16 @@ public class Host {
 	}
 	
 	public boolean addVM(VirtualMachine newVm) {
-		if(newVm.getDisk() <= (disk- usedDisk) && newVm.getRam() <= (ram- usedRam))
+		if(newVm.getDisk() <= (disk- usedDisk) && newVm.getRam() <= (ram- usedRam)) // if it can be inserted
 		{
-			virtualMachines.add(newVm);
+			virtualMachines.add(newVm); //adds into the arraylist
 			usedDisk += newVm.getDisk();
 			usedRam += newVm.getRam();
 			if(disk == usedDisk || ram == usedRam)
 			{
-				full = true;
+				full = true; // It became full  it wont receive any more vm requests
 			}
-			this.bubbleSort();
+			this.bubbleSort(); // We sort it because a new vm got inserted
 			return true;
 		}
 		System.out.println("Couldn't add "+ newVm.toString()+ " in Host :"+this.toString());
