@@ -137,6 +137,115 @@ public class Host {
 		return smallestIndex;
 	}
 	
+	
+	
+	@SuppressWarnings("unchecked")
+	public ArrayList<ArrayList<VirtualMachine>> searchForMultiple(VirtualMachine targetVm)
+	{
+		ArrayList<ArrayList<VirtualMachine>> options = new ArrayList<ArrayList<VirtualMachine>>();
+		ArrayList<ArrayList<VirtualMachine>> potentials = new ArrayList<ArrayList<VirtualMachine>>();
+		ArrayList<VirtualMachine> searchList = new ArrayList<VirtualMachine>(); // We are trying to find applicable combinations of these elements
+		VirtualMachine indexVm;
+		
+		ArrayList<VirtualMachine> indexArr;
+		for (int i = 0; i < virtualMachines.size(); i++)
+		{
+			indexVm = virtualMachines.get(i);
+			indexArr = new ArrayList<VirtualMachine>();
+			indexArr.add(indexVm);
+			if(indexVm.getDisk()> targetVm.getDisk() && indexVm.getRam() > targetVm.getRam() )
+			{
+				options.add(indexArr);
+			}
+			else {				
+				searchList.add(indexVm);
+				potentials.add(indexArr);
+			}
+		}
+		ArrayList<VirtualMachine> newArr;
+		int i = 0;
+		
+		while(i < potentials.size())
+		{
+			newArr =new ArrayList<VirtualMachine>();
+			indexArr = potentials.get(i);
+			for (int j = 0; j < searchList.size(); j++)
+			{
+				indexVm = searchList.get(j);
+				if(!Host.arrHasVm(indexArr, indexVm))
+				{
+					newArr = (ArrayList<VirtualMachine>) indexArr.clone();
+					newArr.add(indexVm);
+					break;
+				}
+			}
+			if (newArr.size() > 0)
+			{
+				if(Host.isOption(newArr, targetVm))
+				{
+					if(!Host.isDuplicate(options, newArr)) options.add(newArr);
+				}
+				else
+				{
+					if(!Host.isDuplicate(potentials, newArr)) potentials.add(newArr);
+				}
+			}
+			i++;
+		}
+		
+		
+		return options;
+	}
+	private static boolean arrHasVm(ArrayList<VirtualMachine> arr, VirtualMachine vm) {
+		for(int i = 0; i < arr.size(); i++) {
+			if(arr.get(i).getId() == vm.getId()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	private static boolean isDuplicate(ArrayList<ArrayList<VirtualMachine>> arr,ArrayList<VirtualMachine> target )
+	{
+		int count;
+		for (int i = 0; i < arr.size(); i++ )
+		{
+			count = 0;
+			for(int j = 0; j < target.size(); j++)
+			{
+				if(Host.arrHasVm(arr.get(i), target.get(j)))
+				{
+					count++;
+				}
+				else {
+					break;
+				}
+			}
+			if(count == target.size())
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	public static boolean isOption(ArrayList<VirtualMachine> arr, VirtualMachine vm) {
+		int disk = 0; 
+		int ram = 0;
+		
+		VirtualMachine index ;
+		for(int i = 0; i< arr.size(); i++) {
+			index = arr.get(i);
+			
+			disk += index.getDisk();
+			ram += index.getRam();
+		}
+		
+		if(vm.getDisk() <= disk &&vm.getRam() <= ram)
+		{
+			return true;
+		}
+		
+		return false;
+	}
 	public boolean isFit(VirtualMachine vm) {
 		if(usedDisk +vm.getDisk() == disk || usedRam +vm.getRam() == ram)
 		{

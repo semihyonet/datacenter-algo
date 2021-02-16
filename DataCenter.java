@@ -25,9 +25,11 @@ public class DataCenter {
 		boolean result = false;
 		Host currentHost; 
 		
+		
 		for (int i = 0; i < hosts.size(); i++)// Loops to find if it fits to any virtual machine
 		{
 			currentHost = hosts.get(hosts.size() - 1- i);  // Loops from the fullest to the emptiest
+			System.out.println(currentHost.searchForMultiple(newVm));
 			if(currentHost.hasEnoughSpace(newVm) && currentHost.isFit(newVm)) // Checks if it has space and
 			{																//if it completes the disk or ram space of the host					System.out.println("\tAdding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
 				System.out.println("\tFound a HOST that fit! Adding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
@@ -118,7 +120,7 @@ public class DataCenter {
 		Host b; 
 		for (int i = 0; i < hosts.size()-1; i++) // Limit the index
 		{
-			for(int j = 0; j <hosts.size()-i-1; j++) // This
+			for(int j = 0; j <hosts.size()-i-1; j++) // Iterate while comparing j with j+1 
 			{
 				a = hosts.get(j);
 				b = hosts.get(j+1);
@@ -237,35 +239,38 @@ public class DataCenter {
 			//myCenter.newVM(i*50, 150);	
 			//System.out.println(myCenter.toString());
 //		}
-		
+		boolean template = true; // If true it reads from templates
+		if(template)
+		{
+			try {
 
-		try {
+				File hostFile = new File("./src/datacenter/scenarios/host.txt");
+				Scanner hostReader;
+				hostReader = new Scanner(hostFile);
+				String line;
+				String[] lineArr;
+				while(hostReader.hasNextLine())
+				{
+					line = hostReader.nextLine();
+					lineArr =line.split("\\s");//splits the string based on whitespace  
+					myCenter.newHost(Integer.parseInt(lineArr[0]), Integer.parseInt(lineArr[1])); //Each line must have 2 integers
+				}																			//   Which represents 1)Disk and 2)RAM
+				File vmFile = new File("./src/datacenter/scenarios/vm.txt");
+				Scanner vmReader;
+				vmReader = new Scanner(vmFile);
+				
+				
+				while(vmReader.hasNextLine())
+				{
+					line = vmReader.nextLine();
+					lineArr =line.split("\\s");//splits the string based on whitespace  
+					myCenter.newVM(Integer.parseInt(lineArr[0]), Integer.parseInt(lineArr[1])); //Each line must have 2 integers
+				}																
+			} catch (FileNotFoundException e1) {
 
-			File hostFile = new File("./src/datacenter/scenarios/host.txt");
-			Scanner hostReader;
-			hostReader = new Scanner(hostFile);
-			String line;
-			String[] lineArr;
-			while(hostReader.hasNextLine())
-			{
-				line = hostReader.nextLine();
-				lineArr =line.split("\\s");//splits the string based on whitespace  
-				myCenter.newHost(Integer.parseInt(lineArr[0]), Integer.parseInt(lineArr[1])); //Each line must have 2 integers
-			}																			//   Which represents 1)Disk and 2)RAM
-			File vmFile = new File("./src/datacenter/scenarios/vm.txt");
-			Scanner vmReader;
-			vmReader = new Scanner(vmFile);
+				e1.printStackTrace();
+			}
 			
-			
-			while(vmReader.hasNextLine())
-			{
-				line = vmReader.nextLine();
-				lineArr =line.split("\\s");//splits the string based on whitespace  
-				myCenter.newVM(Integer.parseInt(lineArr[0]), Integer.parseInt(lineArr[1])); //Each line must have 2 integers
-			}																
-		} catch (FileNotFoundException e1) {
-
-			e1.printStackTrace();
 		}
 		
 		boolean loop = true;     
