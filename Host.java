@@ -153,7 +153,7 @@ public class Host {
 			indexVm = virtualMachines.get(i);
 			indexArr = new ArrayList<VirtualMachine>();
 			indexArr.add(indexVm);
-			if(indexVm.getDisk()> targetVm.getDisk() && indexVm.getRam() > targetVm.getRam() )
+			if(this.getAvailableDisk() + indexVm.getDisk() >= targetVm.getDisk() && this.getAvailableRam() +indexVm.getRam() >= targetVm.getRam())
 			{
 				options.add(indexArr);
 			}
@@ -181,7 +181,7 @@ public class Host {
 			}
 			if (newArr.size() > 0)
 			{
-				if(Host.isOption(newArr, targetVm))
+				if(this.isOption(newArr, targetVm))
 				{
 					if(!Host.isDuplicate(options, newArr)) options.add(newArr);
 				}
@@ -227,7 +227,7 @@ public class Host {
 		}
 		return false;
 	}
-	public static boolean isOption(ArrayList<VirtualMachine> arr, VirtualMachine vm) {
+	public boolean isOption(ArrayList<VirtualMachine> arr, VirtualMachine vm) {
 		int disk = 0; 
 		int ram = 0;
 		
@@ -239,13 +239,14 @@ public class Host {
 			ram += index.getRam();
 		}
 		
-		if(vm.getDisk() <= disk &&vm.getRam() <= ram)
+		if(vm.getDisk() <= this.disk -this.usedDisk + disk &&vm.getRam() <= this.ram - this.usedRam + ram)
 		{
 			return true;
 		}
 		
 		return false;
 	}
+	
 	public boolean isFit(VirtualMachine vm) {
 		if(usedDisk +vm.getDisk() == disk || usedRam +vm.getRam() == ram)
 		{

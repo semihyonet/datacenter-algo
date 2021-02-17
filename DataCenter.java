@@ -29,7 +29,6 @@ public class DataCenter {
 		for (int i = 0; i < hosts.size(); i++)// Loops to find if it fits to any virtual machine
 		{
 			currentHost = hosts.get(hosts.size() - 1- i);  // Loops from the fullest to the emptiest
-			System.out.println(currentHost.searchForMultiple(newVm));
 			if(currentHost.hasEnoughSpace(newVm) && currentHost.isFit(newVm)) // Checks if it has space and
 			{																//if it completes the disk or ram space of the host					System.out.println("\tAdding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
 				System.out.println("\tFound a HOST that fit! Adding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
@@ -57,44 +56,73 @@ public class DataCenter {
 			}
 		}
 		
-		VirtualMachine currentVm ;
-		Host otherHost;
-		if(!result) // This if clause is for emptying up space for the vm
+//		VirtualMachine currentVm ;
+//		Host otherHost;
+//		if(!result) // This if clause is for emptying up space for the vm
+//		{
+//			for(int i = 0; i < hosts.size(); i++) // Loops to find a host to empty up space for
+//			{
+//				currentHost = hosts.get(i); 
+//				if(!currentHost.full) // If it's full then we stop. We shouldn't touch full VM's
+//				{
+//					for(int j = 0; j < currentHost.vmSize(); j++) // Loops to find a VM to swap out
+//					{
+//						currentVm = currentHost.getVm(j); 
+//						if(	currentHost.getAvailableDisk() + currentVm.getDisk()- newVm.getDisk() >= 0  // This checks if new vm will fit after we swap out
+//						&&currentHost.getAvailableRam()+ currentVm.getRam()- newVm.getRam() >=0)
+//						{
+//							for (int k = 0; k < hosts.size(); k++) // This is for searching new Host's that we can transfer the currentVM into
+//							{
+//								otherHost = hosts.get(k); 
+//								if(k != i && !otherHost.full &&  otherHost.hasEnoughSpace(currentVm)) 
+//								{
+//									currentHost.removeVM(currentVm.getId()); //Transfers the VM to open up space
+//									otherHost.addVM(currentVm); 
+//									
+//									currentHost.addVM(newVm); // Adds the vm into the currentHost
+//									result = true;
+//									break;
+//								}
+//							}
+//						}
+//						if(result)
+//						{
+//							break;
+//						}
+//					}
+//				}
+//				if (result)
+//				{
+//					break;
+//				}
+//			}
+//		}
+//		
+		if(!result)
 		{
-			for(int i = 0; i < hosts.size(); i++) // Loops to find a host to empty up space for
+			ArrayList<ArrayList<VirtualMachine>> options;
+			boolean isSwaped;
+			for(int i = 0; i < hosts.size(); i++)
 			{
-				currentHost = hosts.get(i); 
-				if(!currentHost.full) // If it's full then we stop. We shouldn't touch full VM's
+				currentHost = hosts.get(i);
+				options = currentHost.searchForMultiple(newVm);
+				if(options.size() > 0)
 				{
-					for(int j = 0; j < currentHost.vmSize(); j++) // Loops to find a VM to swap out
+					for(int j = 0; j < options.size(); j++)
 					{
-						currentVm = currentHost.getVm(j); 
-						if(	currentHost.getAvailableDisk() + currentVm.getDisk()- newVm.getDisk() >= 0  // This checks if new vm will fit after we swap out
-						&&currentHost.getAvailableRam()+ currentVm.getRam()- newVm.getRam() >=0)
+						isSwaped = this.optionsInsert(options.get(j), currentHost,0,"");
+						
+						if(isSwaped)
 						{
-							for (int k = 0; k < hosts.size(); k++) // This is for searching new Host's that we can transfer the currentVM into
-							{
-								otherHost = hosts.get(k); 
-								if(k != i && !otherHost.full &&  otherHost.hasEnoughSpace(currentVm)) 
-								{
-									currentHost.removeVM(currentVm.getId()); //Transfers the VM to open up space
-									otherHost.addVM(currentVm); 
-									
-									currentHost.addVM(newVm); // Adds the vm into the currentHost
-									result = true;
-									break;
-								}
-							}
-						}
-						if(result)
-						{
+							currentHost.addVM(newVm);
+							result = true;
 							break;
 						}
 					}
-				}
-				if (result)
-				{
-					break;
+					if(result)
+					{
+						break;
+					}
 				}
 			}
 		}
@@ -113,6 +141,42 @@ public class DataCenter {
 		}
 		
 		return result;
+	}
+	public boolean optionsInsert(ArrayList<VirtualMachine> option, Host rootHost, int index, String info)
+	{
+		System.out.println(option);
+		boolean result; 
+		Host currentHost;
+		VirtualMachine currentVm = option.get(index); 
+		for(int i = 0; i < this.hosts.size(); i++)
+		{
+			currentHost = hosts.get(i);
+			if(currentHost.getId() != rootHost.getId() && currentHost.hasEnoughSpace(currentVm))
+			{
+				if(currentVm.getId() == 2)
+				{
+					System.out.println("HELLOOO");
+				}
+				rootHost.removeVM(currentVm.getId());
+				currentHost.addVM(currentVm);
+				if (option.size() == index + 1)
+				{
+					System.out.println(info);
+					return true;
+				}
+				result = optionsInsert(option, rootHost, index+1, info+ "\nSwapped VM:"+currentVm.getId()+" in to Host:"+ currentHost.getId());
+
+				if (result)
+				{
+					return true;
+				}
+				currentHost.removeVM(currentVm.getId());
+				rootHost.addVM(currentVm);
+			}
+		}
+		
+		
+		return false;
 	}
 	
 	public void bubbleSortHost() {
