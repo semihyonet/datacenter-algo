@@ -149,11 +149,11 @@ public class DataCenter {
 			{
 				a = hosts.get(j);
 				b = hosts.get(j+1);
-				if(a.getAvailableDisk() < b.getAvailableDisk()) // Sort by which has the most available disk space
+				if(a.getAvailableRam() < b.getAvailableRam()) // Sort by which has the most available disk space
 				{
 					this.swapHost(j,j+1);
 				}
-				else if(a.getAvailableDisk() == b.getAvailableDisk() && a.getAvailableRam() < b.getAvailableRam()) // If disk space is equal, choose the one with more ram
+				else if(a.getAvailableRam() == b.getAvailableRam() && a.getAvailableDisk() < b.getAvailableDisk()) // If disk space is equal, choose the one with more ram
 				{
 					this.swapHost(j,j+1);
 				}

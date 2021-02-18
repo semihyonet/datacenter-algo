@@ -267,7 +267,7 @@ public class Host {
 				a = virtualMachines.get(j);
 				b = virtualMachines.get(j+1);
 				
-				if((a.getDisk() > b.getDisk()) || (a.getDisk()== b.getDisk() && a.getRam() > b.getRam()))
+				if((a.getRam() > b.getRam()) || (a.getRam()== b.getRam() && a.getDisk() > b.getDisk()))
 				{
 					this.swapVM(j,j+1);
 				}
