@@ -41,8 +41,8 @@ public class Host {
 		VirtualMachine indexVM; // Virtual machine to iterate through
 		for (int i = 0; i < virtualMachines.size(); i++)
 		{
-			indexVM = virtualMachines.get(i);
-			if (indexVM.getId() == id)
+			indexVM = virtualMachines.get(i); 
+			if (indexVM.getId() == id) // Find the id  searched
 			{
 				usedDisk -= indexVM.getDisk();
 				usedRam -= indexVM.getRam();
@@ -142,18 +142,23 @@ public class Host {
 	
 	@SuppressWarnings("unchecked")
 	public ArrayList<ArrayList<VirtualMachine>> searchForMultiple(VirtualMachine targetVm)
-	{
+	{// This function is used for finding vm's to swap out for emptying space for targetVm
 		ArrayList<ArrayList<VirtualMachine>> options = new ArrayList<ArrayList<VirtualMachine>>();
+		//Options: Combinations of the searchList arr which would make targerVm insertible into this host.
 		ArrayList<ArrayList<VirtualMachine>> potentials = new ArrayList<ArrayList<VirtualMachine>>();
-		ArrayList<VirtualMachine> searchList = new ArrayList<VirtualMachine>(); // We are trying to find applicable combinations of these elements
+		//Potentials: These arrays are
+		ArrayList<VirtualMachine> searchList = new ArrayList<VirtualMachine>(); // We are trying to find applicable combinations of these virtual machines
+		// searchList: VMs lower than target VM specs
 		VirtualMachine indexVm;
 		
 		ArrayList<VirtualMachine> indexArr;
+		//Setup loop This is for building the searchList
 		for (int i = 0; i < virtualMachines.size(); i++)
 		{
 			indexVm = virtualMachines.get(i);
 			indexArr = new ArrayList<VirtualMachine>();
 			indexArr.add(indexVm);
+			//If larger than vm add it to options if not add it to potentials for searching up combinations with other searchList Vms
 			if(this.getAvailableDisk() + indexVm.getDisk() >= targetVm.getDisk() && this.getAvailableRam() +indexVm.getRam() >= targetVm.getRam())
 			{
 				options.add(indexArr);
@@ -166,21 +171,21 @@ public class Host {
 		ArrayList<VirtualMachine> newArr;
 		int i = 0;
 		
-		while(i < potentials.size())
+		while(i < potentials.size()) // This loop is for searching combinations
 		{
-			newArr =new ArrayList<VirtualMachine>();
+			newArr =new ArrayList<VirtualMachine>(); 
 			indexArr = potentials.get(i);
-			for (int j = 0; j < searchList.size(); j++)
+			for (int j = 0; j < searchList.size(); j++)  //searches for a vm which would make current pottential bigger than the target vm
 			{
-				indexVm = searchList.get(j);
+				indexVm = searchList.get(j); 
 				if(!Host.arrHasVm(indexArr, indexVm))
 				{
 					newArr = (ArrayList<VirtualMachine>) indexArr.clone();
 					newArr.add(indexVm);
-					break;
+					//break;
 				}
-			}
-			if (newArr.size() > 0)
+			
+			if (newArr.size() > 0) // if any vm was found
 			{
 				if(this.isOption(newArr, targetVm))
 				{
@@ -190,6 +195,7 @@ public class Host {
 				{
 					if(!Host.isDuplicate(potentials, newArr)) potentials.add(newArr);
 				}
+			}
 			}
 			i++;
 		}

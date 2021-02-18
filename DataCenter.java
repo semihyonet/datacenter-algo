@@ -31,7 +31,7 @@ public class DataCenter {
 			currentHost = hosts.get(hosts.size() - 1- i);  // Loops from the fullest to the emptiest
 			if(currentHost.hasEnoughSpace(newVm) && currentHost.isFit(newVm)) // Checks if it has space and
 			{																//if it completes the disk or ram space of the host					System.out.println("\tAdding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
-//				System.out.println("\tFound a HOST that fit! Adding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
+
 				currentHost.addVM(newVm); // VM will be added into the host and the host will sort it's VM's
 				Controller.addVm(newVm, currentHost);				
 				Controller.hostFit(currentHost);
@@ -58,7 +58,7 @@ public class DataCenter {
 			}
 		}
 	
-		
+		//PART 3: Swaps multiple or singular vms to free up space for the target
 		if(!result)
 		{
 			ArrayList<ArrayList<VirtualMachine>> options;
@@ -66,12 +66,12 @@ public class DataCenter {
 			for(int i = 0; i < hosts.size(); i++)
 			{
 				currentHost = hosts.get(i);
-				options = currentHost.searchForMultiple(newVm);
+				options = currentHost.searchForMultiple(newVm); // This function gathers different combinations to swap out
 				if(options.size() > 0)
 				{
 					for(int j = 0; j < options.size(); j++)
 					{
-						isSwaped = this.optionsInsert(options.get(j), currentHost,0,new ArrayList<Host>());
+						isSwaped = this.optionsInsert(options.get(j), currentHost,0,new ArrayList<Host>()); // This is our main Algo for swaping out options
 						
 						if(isSwaped)
 						{
@@ -103,34 +103,35 @@ public class DataCenter {
 		
 		return result;
 	}
+	
+	//Backtracking algorithm Recursive for swaping vms for opening space for the new Vm
 	public boolean optionsInsert(ArrayList<VirtualMachine> option, Host rootHost, int index, ArrayList<Host> insertedHost)
 	{
-//		System.out.println(option);
 		boolean result; 
 		Host currentHost;
 		VirtualMachine currentVm = option.get(index); 
-		for(int i = 0; i < this.hosts.size(); i++)
+		for(int i = 0; i < this.hosts.size(); i++) // Iterating hosts for placing an option
 		{
 			currentHost = hosts.get(i);
 			if(currentHost.getId() != rootHost.getId() && currentHost.hasEnoughSpace(currentVm))
 			{
 				@SuppressWarnings("unchecked")
-				ArrayList<Host> newArr = (ArrayList<Host>) insertedHost.clone();
+				ArrayList<Host> newArr = (ArrayList<Host>) insertedHost.clone(); // This is for logging our actions
 				newArr.add(currentHost);
 				rootHost.removeVM(currentVm.getId());
 				currentHost.addVM(currentVm);
 				if (option.size() == index + 1)
 				{
-					Controller.multipleSwap(rootHost, option, newArr);
-					return true;
+					Controller.multipleSwap(rootHost, option, newArr); 
+					return true; // This means that the algo placed all options correctly and the operations ended
 				}
-				result = optionsInsert(option, rootHost, index+1, newArr);
+				result = optionsInsert(option, rootHost, index+1, newArr); // There are more options to insert
 
 				if (result)
 				{
-					return true;
+					return true; // if the algo reached the end and returned true
 				}
-				currentHost.removeVM(currentVm.getId());
+				currentHost.removeVM(currentVm.getId()); // Root failed to find correct placings reverting all actions
 				rootHost.addVM(currentVm);
 				newArr.clear();
 			}
@@ -213,7 +214,7 @@ public class DataCenter {
 			
 		}
 	}
-	
+	// This is used for swaping Virtual Machines from 2 different Hosts
 	public boolean swapVMbetweenHosts(int host1i,int vmHost1i, int host2i, int vmHost2i )
 	{
 		Host host1 = hosts.get(host1i);
@@ -253,18 +254,9 @@ public class DataCenter {
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		DataCenter myCenter = new DataCenter();
-	//	myCenter.newHost(1000, 1000);
-	//	myCenter.newHost(1000, 1000);
-	//	myCenter.newHost(1000, 1000);
 
-	//	myCenter.newVM(400, 150);	
-		//for(int i = 1; i <=9  ; i++)
-		//{
-			//myCenter.newVM(i*50, 150);	
-			//System.out.println(myCenter.toString());
-//		}
+		DataCenter myCenter = new DataCenter();
+
 		boolean template = true; // If true it reads from templates
 		if(template)
 		{
