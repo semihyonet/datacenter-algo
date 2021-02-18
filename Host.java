@@ -30,6 +30,7 @@ public class Host {
 				full = true; // It became full  it wont receive any more vm requests
 			}
 			this.bubbleSort(); // We sort it because a new vm got inserted
+			//Controller.addVm(newVm, this);
 			return true;
 		}
 		System.out.println("Couldn't add "+ newVm.toString()+ " in Host :"+this.toString());

@@ -15,9 +15,9 @@ public class DataCenter {
 
 	public void newHost(int disk,int ram) { // Adds a new Host
 		Host newHost = new Host(hostIndex, disk, ram);
-		System.out.println("Added a new host : "+ newHost.toString());
 		hosts.add(newHost);
 		hostIndex++;
+		Controller.addHost(newHost);
 	}
 	
 	public boolean newVM(int disk, int ram){
@@ -31,9 +31,11 @@ public class DataCenter {
 			currentHost = hosts.get(hosts.size() - 1- i);  // Loops from the fullest to the emptiest
 			if(currentHost.hasEnoughSpace(newVm) && currentHost.isFit(newVm)) // Checks if it has space and
 			{																//if it completes the disk or ram space of the host					System.out.println("\tAdding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
-				System.out.println("\tFound a HOST that fit! Adding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
-
+//				System.out.println("\tFound a HOST that fit! Adding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
 				currentHost.addVM(newVm); // VM will be added into the host and the host will sort it's VM's
+				Controller.addVm(newVm, currentHost);				
+				Controller.hostFit(currentHost);
+
 				vmIndex++; // Increments the Index 
 				result = true; // This means that it's inserted and don't need to get into the later if clauses
 				break;
@@ -48,56 +50,15 @@ public class DataCenter {
 				{
 					currentHost.addVM(newVm); // Adds into the host and the host does sort
 					vmIndex++;
-					System.out.println("\tAdding VM:"+ vmIndex+ " into the host: "+currentHost.getId());
+					Controller.addVm(newVm, currentHost);
 					result = true;
 					break;
 				}
 				
 			}
 		}
+	
 		
-//		VirtualMachine currentVm ;
-//		Host otherHost;
-//		if(!result) // This if clause is for emptying up space for the vm
-//		{
-//			for(int i = 0; i < hosts.size(); i++) // Loops to find a host to empty up space for
-//			{
-//				currentHost = hosts.get(i); 
-//				if(!currentHost.full) // If it's full then we stop. We shouldn't touch full VM's
-//				{
-//					for(int j = 0; j < currentHost.vmSize(); j++) // Loops to find a VM to swap out
-//					{
-//						currentVm = currentHost.getVm(j); 
-//						if(	currentHost.getAvailableDisk() + currentVm.getDisk()- newVm.getDisk() >= 0  // This checks if new vm will fit after we swap out
-//						&&currentHost.getAvailableRam()+ currentVm.getRam()- newVm.getRam() >=0)
-//						{
-//							for (int k = 0; k < hosts.size(); k++) // This is for searching new Host's that we can transfer the currentVM into
-//							{
-//								otherHost = hosts.get(k); 
-//								if(k != i && !otherHost.full &&  otherHost.hasEnoughSpace(currentVm)) 
-//								{
-//									currentHost.removeVM(currentVm.getId()); //Transfers the VM to open up space
-//									otherHost.addVM(currentVm); 
-//									
-//									currentHost.addVM(newVm); // Adds the vm into the currentHost
-//									result = true;
-//									break;
-//								}
-//							}
-//						}
-//						if(result)
-//						{
-//							break;
-//						}
-//					}
-//				}
-//				if (result)
-//				{
-//					break;
-//				}
-//			}
-//		}
-//		
 		if(!result)
 		{
 			ArrayList<ArrayList<VirtualMachine>> options;
@@ -110,7 +71,7 @@ public class DataCenter {
 				{
 					for(int j = 0; j < options.size(); j++)
 					{
-						isSwaped = this.optionsInsert(options.get(j), currentHost,0,"");
+						isSwaped = this.optionsInsert(options.get(j), currentHost,0,new ArrayList<Host>());
 						
 						if(isSwaped)
 						{
@@ -137,14 +98,14 @@ public class DataCenter {
 		
 		else if(!result)
 		{
-			System.out.println("\tVM was unable to find a host.");
+			Controller.Error("\tVM was unable to find a host.");
 		}
 		
 		return result;
 	}
-	public boolean optionsInsert(ArrayList<VirtualMachine> option, Host rootHost, int index, String info)
+	public boolean optionsInsert(ArrayList<VirtualMachine> option, Host rootHost, int index, ArrayList<Host> insertedHost)
 	{
-		System.out.println(option);
+//		System.out.println(option);
 		boolean result; 
 		Host currentHost;
 		VirtualMachine currentVm = option.get(index); 
@@ -153,18 +114,17 @@ public class DataCenter {
 			currentHost = hosts.get(i);
 			if(currentHost.getId() != rootHost.getId() && currentHost.hasEnoughSpace(currentVm))
 			{
-				if(currentVm.getId() == 2)
-				{
-					System.out.println("HELLOOO");
-				}
+				@SuppressWarnings("unchecked")
+				ArrayList<Host> newArr = (ArrayList<Host>) insertedHost.clone();
+				newArr.add(currentHost);
 				rootHost.removeVM(currentVm.getId());
 				currentHost.addVM(currentVm);
 				if (option.size() == index + 1)
 				{
-					System.out.println(info);
+					Controller.multipleSwap(rootHost, option, newArr);
 					return true;
 				}
-				result = optionsInsert(option, rootHost, index+1, info+ "\nSwapped VM:"+currentVm.getId()+" in to Host:"+ currentHost.getId());
+				result = optionsInsert(option, rootHost, index+1, newArr);
 
 				if (result)
 				{
@@ -172,6 +132,7 @@ public class DataCenter {
 				}
 				currentHost.removeVM(currentVm.getId());
 				rootHost.addVM(currentVm);
+				newArr.clear();
 			}
 		}
 		
@@ -236,6 +197,7 @@ public class DataCenter {
 								if (this.swapVMbetweenHosts(i, j, k, result)) // Params are (Host1 index,vm1 index, host2 index, vm2 index)
 								{
 									swapped = true;
+									Controller.scheduler(hosts.get(i));
 									break;
 								}
 							}
@@ -265,14 +227,14 @@ public class DataCenter {
 		host2.removeVM(vmHost2.getId());
 		if (host1.addVM(vmHost2) == false || host2.addVM(vmHost1) == false)
 		{
-			//host1.removeVM(vmHost2.getId());
-			//host2.removeVM(vmHost1.getId());
+			host1.removeVM(vmHost2.getId()); 
+			host2.removeVM(vmHost1.getId());
 			host1.addVM(vmHost1); // swaps the hosts
 			host2.addVM(vmHost2);
-			System.out.println("Couldnt swap"+vmHost1.toString()+" with-> "+vmHost2.toString());
+			Controller.Error("Couldnt swap"+vmHost1.toString()+" with-> "+vmHost2.toString());
 			return false;
 		}
-		System.out.println("\tSwapped host:"+host1.getId()+"'s "+vmHost1.toString()+" <-with-> host:"+host2.getId()+"'s "+vmHost2.toString());
+		Controller.swap(host1, host2, vmHost1, vmHost2);
 		return true;
 		
 	}
